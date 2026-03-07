@@ -1,1 +1,5 @@
 nodeLinker: hoisted
+
+onlyBuiltDependencies:
+  - bufferutil
+  - utf-8-validate

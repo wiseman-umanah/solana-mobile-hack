@@ -6,10 +6,10 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-	"scheme": "otc_marketplace",
-	"experiments": {
-		"typedRoutes": true
-	},
+    "scheme": "otcmarketplace",
+    "experiments": {
+      "typedRoutes": true
+    },
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -19,6 +19,7 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.otc.marketplace",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -29,10 +30,17 @@
     },
     "web": {
       "favicon": "./assets/favicon.png",
-	  "bundler": "metro"
+      "bundler": "metro"
     },
     "plugins": [
-      "expo-router"
-    ]
+      "expo-router",
+      "expo-font"
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "22631e98-a4f0-415b-991e-d16ceabe0d94"
+      }
+    }
   }
 }

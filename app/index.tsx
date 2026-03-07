@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
+  Alert,
   Animated,
   Dimensions,
   ImageSourcePropType,
@@ -13,7 +14,9 @@ import {
 } from "react-native";
 import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useMobileWallet } from "@wallet-ui/react-native-web3js";
 import "../global.css";
+
 
 const { width: W } = Dimensions.get("window");
 
@@ -328,6 +331,8 @@ export default function OnboardingScreen() {
   const scrollX = useRef(new Animated.Value(0)).current;
   const ctaPulse = useRef(new Animated.Value(0)).current;
   const [activeIndex, setActiveIndex] = useState(0);
+  const [isConnecting, setIsConnecting] = useState(false);
+  const { account, connect } = useMobileWallet();
 
   const onViewRef = useRef(({ viewableItems }: { viewableItems: ViewToken[] }) => {
     if (viewableItems[0]?.index != null) {
@@ -336,9 +341,26 @@ export default function OnboardingScreen() {
   });
   const viewConfigRef = useRef({ viewAreaCoveragePercentThreshold: 50 });
 
-  const handleConnect = useCallback(() => {
-    router.replace("/(otc)/dashboard");
-  }, []);
+  const handleConnect = useCallback(async () => {
+    if (isConnecting) return;
+
+    try {
+      setIsConnecting(true);
+      if (!account) {
+        const nextAccount = await connect();
+        if (!nextAccount) {
+          throw new Error("Wallet connection returned no account.");
+        }
+      }
+      router.replace("/(otc)/dashboard");
+    } catch (error) {
+      console.warn("Wallet connect failed", error);
+      const message = error instanceof Error ? error.message : "Unable to connect wallet.";
+      Alert.alert("Wallet Connection Failed", message);
+    } finally {
+      setIsConnecting(false);
+    }
+  }, [account, connect, isConnecting]);
 
   useEffect(() => {
     const loop = Animated.loop(
@@ -364,47 +386,56 @@ export default function OnboardingScreen() {
     outputRange: [1, 1.015],
   });
 
+  useEffect(() => {
+    if (account) {
+      router.replace("/(otc)/dashboard");
+    }
+  }, [account]);
+
   return (
-    <SafeAreaView style={styles.root} edges={["top", "bottom"]}>
-      <StatusBar barStyle="light-content" backgroundColor={C.bg} />
+		<SafeAreaView style={styles.root} edges={["top", "bottom"]}>
+		<StatusBar barStyle="light-content" backgroundColor={C.bg} />
 
-      <Animated.FlatList
-        data={SLIDES}
-        keyExtractor={(item) => item.id}
-        horizontal
-        pagingEnabled
-        bounces={false}
-        showsHorizontalScrollIndicator={false}
-        renderItem={({ item, index }) => (
-          <SlideItem
-            item={item}
-            index={index}
-            activeIndex={activeIndex}
-            scrollX={scrollX}
-          />
-        )}
-        onViewableItemsChanged={onViewRef.current}
-        viewabilityConfig={viewConfigRef.current}
-        onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-          { useNativeDriver: false }
-        )}
-        scrollEventThrottle={16}
-      />
+		<Animated.FlatList
+			data={SLIDES}
+			keyExtractor={(item) => item.id}
+			horizontal
+			pagingEnabled
+			bounces={false}
+			showsHorizontalScrollIndicator={false}
+			renderItem={({ item, index }) => (
+			<SlideItem
+				item={item}
+				index={index}
+				activeIndex={activeIndex}
+				scrollX={scrollX}
+			/>
+			)}
+			onViewableItemsChanged={onViewRef.current}
+			viewabilityConfig={viewConfigRef.current}
+			onScroll={Animated.event(
+			[{ nativeEvent: { contentOffset: { x: scrollX } } }],
+			{ useNativeDriver: false }
+			)}
+			scrollEventThrottle={16}
+		/>
 
-      <Pagination scrollX={scrollX} count={SLIDES.length} />
+		<Pagination scrollX={scrollX} count={SLIDES.length} />
 
-      <View style={styles.footer}>
-        <Animated.View style={[styles.buyBtn, { transform: [{ scale: ctaScale }], width: "100%" }]}>
-          <Pressable
-            onPress={handleConnect}
-            style={({ pressed }) => [ pressed && { opacity: 0.88 }]}
-          >
-            <Text style={styles.ctaText}>Connect Wallet</Text>
-          </Pressable>
-        </Animated.View>
-      </View>
-    </SafeAreaView>
+		<View style={styles.footer}>
+			<Animated.View style={[styles.buyBtn, { transform: [{ scale: ctaScale }], width: "100%" }]}>
+			<Pressable
+          disabled={isConnecting}
+				onPress={handleConnect}
+				style={({ pressed }) => [ pressed && { opacity: 0.88 }]}
+			>
+				<Text style={styles.ctaText}>
+            {isConnecting ? "Connecting..." : account ? "Continue" : "Connect Wallet"}
+          </Text>
+			</Pressable>
+			</Animated.View>
+		</View>
+		</SafeAreaView>
   );
 }
 

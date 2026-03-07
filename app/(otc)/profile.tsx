@@ -1,6 +1,8 @@
 import React, { useMemo, useState } from "react";
 import { Pressable, ScrollView, Switch, Text, View } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
+import { router } from "expo-router";
+import { useMobileWallet } from "@wallet-ui/react-native-web3js";
 import { useThemePreference } from "../../contexts/ThemePreferenceContext";
 
 type TabKey = "listings" | "transactions";
@@ -65,6 +67,7 @@ const activityData = [
 const Profile = () => {
   const [tab, setTab] = useState<TabKey>("listings");
   const { themeMode, toggleTheme } = useThemePreference();
+  const { account, disconnect } = useMobileWallet();
 
   const totalListings = myListings.length;
   const activeListings = useMemo(
@@ -76,7 +79,20 @@ const Profile = () => {
     []
   );
 
-  const shortAddress = "2j3k...9x1f";
+  const addressText = account?.address?.toString();
+  const shortAddress = addressText
+    ? `${addressText.slice(0, 4)}...${addressText.slice(-4)}`
+    : "Wallet not connected";
+
+  const handleDisconnect = async () => {
+    try {
+      await disconnect();
+    } catch (error) {
+      console.warn("Wallet disconnect failed", error);
+    } finally {
+      router.replace("/");
+    }
+  };
 
   return (
     <ScrollView
@@ -102,7 +118,10 @@ const Profile = () => {
           </View>
         </View>
 
-        <Pressable className="mt-4 self-start rounded-full bg-[#4b6bfb] px-4 py-2">
+        <Pressable
+          onPress={handleDisconnect}
+          className="mt-4 self-start rounded-full bg-[#4b6bfb] px-4 py-2"
+        >
           <Text className="text-xs font-semibold text-white">Log out</Text>
         </Pressable>
 
