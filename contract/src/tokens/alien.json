@@ -1,0 +1,26 @@
+{
+  "name": "Alien Token",
+  "symbol": "ALIEN",
+  "description": "Just an alien token.",
+  "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQm8s5Pz8AH_jc1P77JxPygaSlYD7tmpMcbgQ&s",
+  "attributes": [
+    { "trait_type": "Project", "value": "DexSwap" },
+    { "trait_type": "Network", "value": "Solana" }
+  ],
+  "properties": {
+    "category": "image",
+    "files": [
+      {
+        "uri": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQm8s5Pz8AH_jc1P77JxPygaSlYD7tmpMcbgQ&s",
+        "type": "image/png"
+      }
+    ],
+    "creators": [
+      {
+        "address": "Fbhhm1sFjgMXnF4d7WdzgAm9CYRPcX8uV8CCGsVe8GBL",
+        "share": 100
+      }
+    ]
+  },
+  "seller_fee_basis_points": 0
+}

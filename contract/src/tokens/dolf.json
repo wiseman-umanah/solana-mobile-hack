@@ -1,0 +1,26 @@
+{
+  "name": "DolFhin Token",
+  "symbol": "DOLF",
+  "description": "Utility token for the OTC marketplace demo.",
+  "image": "https://static.vecteezy.com/system/resources/previews/057/959/945/non_2x/stylized-spinner-dolphin-art-for-unique-marine-life-cartoon-art-animal-illustration-vector.jpg",
+  "attributes": [
+    { "trait_type": "Project", "value": "DexSwap" },
+    { "trait_type": "Network", "value": "Solana" }
+  ],
+  "properties": {
+    "category": "image",
+    "files": [
+      {
+        "uri": "https://static.vecteezy.com/system/resources/previews/057/959/945/non_2x/stylized-spinner-dolphin-art-for-unique-marine-life-cartoon-art-animal-illustration-vector.jpg",
+        "type": "image/png"
+      }
+    ],
+    "creators": [
+      {
+        "address": "Fbhhm1sFjgMXnF4d7WdzgAm9CYRPcX8uV8CCGsVe8GBL",
+        "share": 100
+      }
+    ]
+  },
+  "seller_fee_basis_points": 0
+}
