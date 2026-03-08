@@ -1,23 +1,26 @@
 import React, { useMemo, useState } from "react";
-import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { Pressable, RefreshControl, ScrollView, Text, TextInput, View } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { sampleListings } from "./data";
+import { useListings } from "../../../hooks/useListings";
 
 type FillMode = "all" | "partial" | "full";
 type StatusMode = "all" | "active" | "pending" | "filled";
+
 const ListingMarket = () => {
+  const { listings, loading, error, refresh } = useListings();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusMode>("all");
   const [fillFilter, setFillFilter] = useState<FillMode>("all");
 
   const filteredListings = useMemo(() => {
     const needle = search.trim().toLowerCase();
-    return sampleListings.filter((listing) => {
+    return listings.filter((listing) => {
       const matchesSearch =
         !needle ||
         listing.baseSymbol.toLowerCase().includes(needle) ||
-        listing.sellerAddress.toLowerCase().includes(needle);
+        listing.sellerAddress.toLowerCase().includes(needle) ||
+        listing.address.toLowerCase().includes(needle);
 
       const matchesStatus =
         statusFilter === "all" ||
@@ -32,7 +35,7 @@ const ListingMarket = () => {
 
       return matchesSearch && matchesStatus && matchesFill;
     });
-  }, [search, statusFilter, fillFilter]);
+  }, [search, statusFilter, fillFilter, listings]);
 
   const activeCount = filteredListings.length;
   const uniqueSellers = useMemo(
@@ -48,8 +51,7 @@ const ListingMarket = () => {
     [filteredListings]
   );
 
-  const shortAddress = (address: string) =>
-    `${address.slice(0, 4)}...${address.slice(-4)}`;
+  const shortAddress = (address: string) => `${address.slice(0, 4)}...${address.slice(-4)}`;
   const formatCurrency = (value: number, digits = 2) =>
     new Intl.NumberFormat("en-US", {
       style: "currency",
@@ -62,6 +64,7 @@ const ListingMarket = () => {
       className="flex-1 bg-[#f6f7fb] dark:bg-[#10131b] px-3 py-4"
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{ paddingBottom: 20 }}
+      refreshControl={<RefreshControl refreshing={loading} onRefresh={refresh} />}
     >
       <View className="mb-4 rounded-3xl border border-[#e2e6f0] dark:border-[#30384c] bg-white dark:bg-[#181c27] p-5 shadow-sm">
         <View className="self-start rounded-full border border-[#e2e6f0] dark:border-[#30384c] bg-[#f1f3f8] dark:bg-[#1f2431] px-3 py-1">
@@ -157,7 +160,15 @@ const ListingMarket = () => {
         </View>
       </View>
 
-      {filteredListings.length === 0 ? (
+      {loading ? (
+        <View className="rounded-3xl border border-[#e2e6f0] dark:border-[#30384c] bg-white dark:bg-[#181c27] px-8 py-12">
+          <Text className="text-center text-sm text-[#7d8699] dark:text-[#8f97b5]">Loading listings...</Text>
+        </View>
+      ) : error ? (
+        <View className="rounded-3xl border border-red-500/30 bg-red-500/10 px-8 py-12">
+          <Text className="text-center text-sm text-red-700 dark:text-red-300">{error}</Text>
+        </View>
+      ) : filteredListings.length === 0 ? (
         <View className="rounded-3xl border border-[#e2e6f0] dark:border-[#30384c] bg-white dark:bg-[#181c27] px-8 py-12">
           <View className="mx-auto h-16 w-16 items-center justify-center rounded-full bg-[#f1f3f8] dark:bg-[#1f2431]">
             <MaterialIcons name="search" size={28} color="#7d8699" />
@@ -171,12 +182,11 @@ const ListingMarket = () => {
         </View>
       ) : (
         filteredListings.map((listing) => {
-          const progress =
-            listing.quantityUi > 0 ? (listing.filledUi / listing.quantityUi) * 100 : 0;
+          const progress = listing.quantityUi > 0 ? (listing.filledUi / listing.quantityUi) * 100 : 0;
           const remainingValue = listing.remainingUi * listing.priceUi;
           return (
             <View
-              key={listing.id}
+              key={listing.address}
               className="mb-4 rounded-2xl border border-[#e2e6f0] dark:border-[#30384c] bg-white dark:bg-[#181c27] p-5 shadow-sm"
             >
               <View className="flex-row items-center justify-between">
@@ -192,7 +202,7 @@ const ListingMarket = () => {
                 <Text className="text-2xl font-bold text-[#1b1f29] dark:text-[#f3f5ff]">${listing.baseSymbol}</Text>
                 <Text className="text-sm text-[#7d8699] dark:text-[#8f97b5]">Listing ID #{listing.listingId}</Text>
                 <Text className="mt-1 text-xs text-[#7d8699] dark:text-[#8f97b5]">
-                  {listing.remainingUi.toLocaleString()} tokens available · Min order{" "}
+                  {listing.remainingUi.toLocaleString()} tokens available · Min order {" "}
                   {Math.min(listing.minPurchaseUi, listing.remainingUi).toLocaleString()}
                 </Text>
               </View>
@@ -250,13 +260,21 @@ const ListingMarket = () => {
 
               <View className="mt-4 flex-row gap-2">
                 <Pressable
-                  onPress={() => router.push(`/(otc)/listing/${listing.id}`)}
+                  onPress={() => router.push(`/(otc)/listing/${listing.address}`)}
                   className="flex-1 flex-row items-center justify-center rounded-lg bg-[#4b6bfb] px-3 py-2"
                 >
                   <MaterialIcons name="visibility" size={16} color="#fff" />
                   <Text className="ml-1 text-sm font-semibold text-white">View Details</Text>
                 </Pressable>
-                <Pressable className="flex-1 flex-row items-center justify-center rounded-lg border border-[#e2e6f0] dark:border-[#30384c] bg-[#f1f3f8] dark:bg-[#1f2431] px-3 py-2">
+                <Pressable
+                  onPress={() =>
+                    router.push({
+                      pathname: "/(otc)/message",
+                      params: { recipient: listing.sellerAddress },
+                    })
+                  }
+                  className="flex-1 flex-row items-center justify-center rounded-lg border border-[#e2e6f0] dark:border-[#30384c] bg-[#f1f3f8] dark:bg-[#1f2431] px-3 py-2"
+                >
                   <MaterialIcons name="chat-bubble-outline" size={16} color="#1b1f29" />
                   <Text className="ml-1 text-sm font-semibold text-[#1b1f29] dark:text-[#f3f5ff]">Message</Text>
                 </Pressable>

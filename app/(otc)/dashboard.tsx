@@ -1,38 +1,8 @@
-import React from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import React, { useState } from "react";
+import { Pressable, RefreshControl, ScrollView, Text, View } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
-
-const metricCards = [
-  {
-    label: "Wallet balance",
-    value: "13.4821 SOL",
-    icon: "attach-money",
-    accentBg: "bg-emerald-500/15",
-    accentText: "text-emerald-600",
-  },
-  {
-    label: "Token holdings",
-    value: "18",
-    icon: "layers",
-    accentBg: "bg-blue-500/15",
-    accentText: "text-blue-600",
-  },
-  {
-    label: "Owned listings",
-    value: "6",
-    icon: "description",
-    accentBg: "bg-violet-500/15",
-    accentText: "text-violet-600",
-  },
-  {
-    label: "Active listings",
-    value: "4",
-    icon: "chat",
-    accentBg: "bg-amber-500/15",
-    accentText: "text-amber-600",
-  },
-] as const;
+import { useDashboardData } from "../../hooks/useDashboardData";
 
 const quickActions = [
   {
@@ -57,18 +27,22 @@ const quickActions = [
   },
 ] as const;
 
-const recentActivity = [
-  { title: "Listing created", detail: "USDC / BONK • 2 mins ago", icon: "north-east" },
-  { title: "Partial fill completed", detail: "USDC / SOL • 10 mins ago", icon: "check-circle" },
-  { title: "Counterparty messaged", detail: "DM thread #A29 • 18 mins ago", icon: "mail" },
-] as const;
-
 const Dashboard = () => {
+  const { shortAddress, metricCards, recentActivity, activityLoading, activityError, refresh } = useDashboardData();
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    refresh();
+    setTimeout(() => setRefreshing(false), 600);
+  };
+
   return (
     <ScrollView
       className="flex-1 bg-[#f6f7fb] dark:bg-[#10131b] px-3 py-4"
       contentContainerStyle={{ paddingBottom: 18 }}
       showsVerticalScrollIndicator={false}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
     >
       <View className="mb-4 rounded-3xl border border-[#e2e6f0] dark:border-[#30384c] bg-white dark:bg-[#181c27] p-5 shadow-sm">
         <View className="mb-5 flex-row items-center justify-between">
@@ -87,9 +61,7 @@ const Dashboard = () => {
 
         <View className="flex-row items-center justify-between">
           <View className="rounded-full border border-[#e2e6f0] dark:border-[#30384c] bg-[#f1f3f8] dark:bg-[#1f2431] px-3 py-2">
-            <Text className="text-[10px] font-semibold uppercase tracking-[1.8px] text-[#4b6bfb]">
-              2j3k...9x1f
-            </Text>
+            <Text className="text-[10px] font-semibold tracking-[1.8px] text-[#4b6bfb]">{shortAddress}</Text>
           </View>
         </View>
       </View>
@@ -101,13 +73,19 @@ const Dashboard = () => {
               key={card.label}
               className="mb-3 w-[48.5%] rounded-3xl border border-[#e2e6f0] dark:border-[#30384c] bg-white dark:bg-[#181c27] p-4"
             >
-              <View
-                className={`h-11 w-11 items-center justify-center rounded-2xl ${card.accentBg}`}
-              >
+              <View className={`h-11 w-11 items-center justify-center rounded-2xl ${card.accentBg}`}>
                 <MaterialIcons
                   name={card.icon}
                   size={20}
-                  color={card.accentText === "text-emerald-600" ? "#16a34a" : card.accentText === "text-blue-600" ? "#2563eb" : card.accentText === "text-violet-600" ? "#7c3aed" : "#d97706"}
+                  color={
+                    card.accentText === "text-emerald-600"
+                      ? "#16a34a"
+                      : card.accentText === "text-blue-600"
+                      ? "#2563eb"
+                      : card.accentText === "text-violet-600"
+                      ? "#7c3aed"
+                      : "#d97706"
+                  }
                 />
               </View>
               <Text className="mt-3 text-xl font-semibold text-[#1b1f29] dark:text-[#f3f5ff]">{card.value}</Text>
@@ -152,9 +130,25 @@ const Dashboard = () => {
           Latest actions recorded in your OTC flow.
         </Text>
 
+        {activityLoading ? (
+          <View className="mb-3 rounded-2xl border border-[#e2e6f0] dark:border-[#30384c] bg-[#f1f3f8] dark:bg-[#1f2431] px-4 py-3">
+            <Text className="text-xs text-[#7d8699] dark:text-[#8f97b5]">Loading recent activity...</Text>
+          </View>
+        ) : null}
+        {!activityLoading && activityError ? (
+          <View className="mb-3 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3">
+            <Text className="text-xs text-red-700 dark:text-red-300">{activityError}</Text>
+          </View>
+        ) : null}
+        {!activityLoading && !activityError && recentActivity.length === 0 ? (
+          <View className="mb-3 rounded-2xl border border-[#e2e6f0] dark:border-[#30384c] bg-[#f1f3f8] dark:bg-[#1f2431] px-4 py-3">
+            <Text className="text-xs text-[#7d8699] dark:text-[#8f97b5]">No activity yet.</Text>
+          </View>
+        ) : null}
+
         {recentActivity.map((item) => (
           <View
-            key={item.title}
+            key={item.key}
             className="mb-3 flex-row items-center rounded-2xl border border-[#e2e6f0] dark:border-[#30384c] bg-[#f1f3f8] dark:bg-[#1f2431] px-4 py-3"
           >
             <View className="mr-3 h-9 w-9 items-center justify-center rounded-xl bg-[#4b6bfb]/15">

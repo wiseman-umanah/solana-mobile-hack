@@ -3,6 +3,7 @@ import { StyleSheet, useColorScheme } from "react-native";
 import { Tabs } from "expo-router";
 import { MaterialIcons, AntDesign } from "@expo/vector-icons";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { StatusBar } from "expo-status-bar";
 import { useColorScheme as useNativeWindColorScheme } from "nativewind";
 import { ThemeMode, themes } from "../../constants/theme";
 import { ThemePreferenceProvider } from "../../contexts/ThemePreferenceContext";
@@ -37,6 +38,7 @@ export default function OtcLayout() {
       style={[styles.appRoot, { backgroundColor: theme.background }]}
       edges={["left", "right"]}
     >
+      <StatusBar style={themeMode === "dark" ? "light" : "dark"} />
       <ThemePreferenceProvider value={themeContextValue}>
         <Tabs
           screenOptions={{
@@ -84,12 +86,6 @@ export default function OtcLayout() {
                 <MaterialIcons name="shopping-cart" size={size} color={color} />
               ),
               title: "Listing",
-            }}
-          />
-          <Tabs.Screen
-            name="listing/[id]"
-            options={{
-              href: null,
             }}
           />
           <Tabs.Screen
