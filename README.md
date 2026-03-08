@@ -80,6 +80,12 @@ mobile/
 └── assets/             # Images and assets
 ```
 
+
+You can doownload The ppreview build here:
+https://expo.dev/accounts/wisemanumanah/projects/mobile/builds/d378f075-6ab4-404a-a8e5-63c8ec28e858
+
+
+
 ## 🔧 Technology Stack
 
 - **Frontend**: React Native with Expo
