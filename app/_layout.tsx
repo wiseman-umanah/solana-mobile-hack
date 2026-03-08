@@ -1,7 +1,6 @@
 import React from "react";
 import { Platform } from "react-native";
 import { Stack } from "expo-router";
-import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { clusterApiUrl } from "@solana/web3.js";
 import { MobileWalletProvider } from "@wallet-ui/react-native-web3js";
@@ -19,10 +18,9 @@ const identity = {
 export default function RootLayout() {
   return (
     <SafeAreaProvider>
-      <StatusBar style="auto" />
       <MobileWalletProvider chain={chain} endpoint={endpoint} identity={identity}>
         <BackendAuthProvider>
-          <SafeAreaView style={{ flex: 1 }} edges={["top", "left", "right"]}>
+          <SafeAreaView style={{ flex: 1 }} edges={["left", "right"]}>
             <Stack
               screenOptions={{
                 headerShown: false,

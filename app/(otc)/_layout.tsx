@@ -1,10 +1,10 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { StyleSheet, useColorScheme } from "react-native";
+import { Platform, StatusBar as RNStatusBar, StyleSheet, useColorScheme } from "react-native";
 import { Tabs } from "expo-router";
 import { MaterialIcons, AntDesign } from "@expo/vector-icons";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-import { StatusBar } from "expo-status-bar";
 import { useColorScheme as useNativeWindColorScheme } from "nativewind";
+import * as NavigationBar from "expo-navigation-bar";
 import { ThemeMode, themes } from "../../constants/theme";
 import { ThemePreferenceProvider } from "../../contexts/ThemePreferenceContext";
 
@@ -20,6 +20,20 @@ export default function OtcLayout() {
   useEffect(() => {
     setColorScheme(themeMode);
   }, [setColorScheme, themeMode]);
+
+  useEffect(() => {
+    if (Platform.OS !== "android") return;
+    const applyNavigationBar = async () => {
+      try {
+        await NavigationBar.setBackgroundColorAsync(theme.surfaceCard);
+        await NavigationBar.setButtonStyleAsync(themeMode === "dark" ? "light" : "dark");
+      } catch {
+        // Best effort: some Android variants may reject these calls.
+      }
+    };
+    void applyNavigationBar();
+  }, [theme.surfaceCard, themeMode]);
+
   const themeContextValue = useMemo(
     () => ({
       themeMode,
@@ -36,9 +50,13 @@ export default function OtcLayout() {
   return (
     <SafeAreaView
       style={[styles.appRoot, { backgroundColor: theme.background }]}
-      edges={["left", "right"]}
+      edges={["top", "left", "right"]}
     >
-      <StatusBar style={themeMode === "dark" ? "light" : "dark"} />
+      <RNStatusBar
+        barStyle={themeMode === "dark" ? "light-content" : "dark-content"}
+        backgroundColor={theme.background}
+        translucent={false}
+      />
       <ThemePreferenceProvider value={themeContextValue}>
         <Tabs
           screenOptions={{
