@@ -7,6 +7,8 @@ type BackendAuthContextValue = {
   token: string | null;
   ensureAuth: () => Promise<string | null>;
   clearAuth: () => void;
+  authPaused: boolean;
+  resumeAuth: () => void;
 };
 
 const BackendAuthContext = createContext<BackendAuthContextValue | null>(null);
@@ -18,6 +20,7 @@ export function BackendAuthProvider({ children }: { children: React.ReactNode })
 
   const [token, setToken] = useState<string | null>(null);
   const [tokenWalletAddress, setTokenWalletAddress] = useState<string | null>(null);
+  const [authPaused, setAuthPaused] = useState(false);
   const authInFlightRef = useRef<Promise<string | null> | null>(null);
 
   useEffect(() => {
@@ -29,10 +32,15 @@ export function BackendAuthProvider({ children }: { children: React.ReactNode })
 
   const clearAuth = useCallback(() => {
     setToken(null);
+    setAuthPaused(true);
+  }, []);
+
+  const resumeAuth = useCallback(() => {
+    setAuthPaused(false);
   }, []);
 
   const ensureAuth = useCallback(async () => {
-    if (!walletPublicKey) return null;
+    if (!walletPublicKey || authPaused) return null;
 
     const currentWallet = walletPublicKey.toBase58();
     if (token && tokenWalletAddress === currentWallet) {
@@ -58,17 +66,18 @@ export function BackendAuthProvider({ children }: { children: React.ReactNode })
     })();
 
     return authInFlightRef.current;
-  }, [walletPublicKey, signMessage, token, tokenWalletAddress]);
+  }, [walletPublicKey, signMessage, token, tokenWalletAddress, authPaused]);
 
   useEffect(() => {
+    if (authPaused) return;
     if (!walletPublicKey || !walletAddress) return;
     if (token && tokenWalletAddress === walletAddress) return;
     void ensureAuth();
-  }, [walletPublicKey, walletAddress, token, tokenWalletAddress, ensureAuth]);
+  }, [walletPublicKey, walletAddress, token, tokenWalletAddress, ensureAuth, authPaused]);
 
   const value = useMemo(
-    () => ({ token, ensureAuth, clearAuth }),
-    [token, ensureAuth, clearAuth]
+    () => ({ token, ensureAuth, clearAuth, authPaused, resumeAuth }),
+    [token, ensureAuth, clearAuth, authPaused, resumeAuth]
   );
 
   return <BackendAuthContext.Provider value={value}>{children}</BackendAuthContext.Provider>;

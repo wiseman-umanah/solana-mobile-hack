@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "mobile",
+    "name": "OTC",
     "slug": "mobile",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -19,13 +19,8 @@
       "supportsTablet": true
     },
     "android": {
-      "package": "com.otc.marketplace",
-      "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
-      },
+      "package": "com.wisemanumanah.otc",
+      "icon": "./assets/icon.png",
       "predictiveBackGestureEnabled": false
     },
     "web": {
@@ -41,6 +36,7 @@
       "eas": {
         "projectId": "22631e98-a4f0-415b-991e-d16ceabe0d94"
       }
-    }
+    },
+    "owner": "wisemanumanah"
   }
 }

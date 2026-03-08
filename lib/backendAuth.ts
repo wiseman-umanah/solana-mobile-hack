@@ -6,7 +6,6 @@ const REQUEST_TIMEOUT_MS = 12000;
 function resolveBackendBaseUrl() {
   return (
     process.env.EXPO_PUBLIC_BACKEND_URL ??
-    process.env.EXPO_BACKEND_URL ??
     "http://localhost:5000"
   );
 }

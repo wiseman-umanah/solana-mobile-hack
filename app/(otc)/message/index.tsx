@@ -132,9 +132,10 @@ export default function MessageListScreen() {
     }
   };
 
-  const shortAddress = (address: string) =>
-    address.length > 10 ? `${address.slice(0, 4)}...${address.slice(-4)}` : address;
-
+	const shortAddress = (address: string) => {
+	if (!address) return;
+	return address.length > 10 ? `${address.slice(0, 4)}...${address.slice(-4)}` : address;
+	};
   useEffect(() => {
     const composeRecipient = params.recipient?.trim();
     if (!composeRecipient) return;

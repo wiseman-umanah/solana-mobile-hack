@@ -15,6 +15,7 @@ import {
 import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useMobileWallet } from "@wallet-ui/react-native-web3js";
+import { useBackendAuth } from "../contexts/BackendAuthContext";
 import "../global.css";
 
 
@@ -333,6 +334,7 @@ export default function OnboardingScreen() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isConnecting, setIsConnecting] = useState(false);
   const { account, connect } = useMobileWallet();
+  const { authPaused, resumeAuth } = useBackendAuth();
 
   const onViewRef = useRef(({ viewableItems }: { viewableItems: ViewToken[] }) => {
     if (viewableItems[0]?.index != null) {
@@ -346,6 +348,7 @@ export default function OnboardingScreen() {
 
     try {
       setIsConnecting(true);
+      resumeAuth();
       if (!account) {
         const nextAccount = await connect();
         if (!nextAccount) {
@@ -360,7 +363,7 @@ export default function OnboardingScreen() {
     } finally {
       setIsConnecting(false);
     }
-  }, [account, connect, isConnecting]);
+  }, [account, connect, isConnecting, resumeAuth]);
 
   useEffect(() => {
     const loop = Animated.loop(
@@ -387,10 +390,10 @@ export default function OnboardingScreen() {
   });
 
   useEffect(() => {
-    if (account) {
+    if (!authPaused && account) {
       router.replace("/(otc)/dashboard");
     }
-  }, [account]);
+  }, [account, authPaused]);
 
   return (
 		<SafeAreaView style={styles.root} edges={["top", "bottom"]}>

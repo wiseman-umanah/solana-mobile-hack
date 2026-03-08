@@ -106,6 +106,12 @@ export default function OtcLayout() {
               title: "Listing",
             }}
           />
+		   <Tabs.Screen
+            name="listing/[id]"
+            options={{
+             href: null
+            }}
+          />
           <Tabs.Screen
             name="message/index"
             options={{

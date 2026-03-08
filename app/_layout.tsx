@@ -12,7 +12,7 @@ const endpoint = clusterApiUrl("devnet");
 const identity = {
   name: "OTC Marketplace",
   uri: "https://otc-marketplace.vercel.app",
-  icon: "favicon.ico",
+  icon: "../assets/icon.png",
 };
 
 export default function RootLayout() {
